@@ -1,0 +1,4 @@
+.vscode
+*.env
+*.db
+.static/

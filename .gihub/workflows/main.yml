@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: "todobot-reminder"
+  CONTAINER_NAME: "reminder-bot"
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    name: Build and Push Docker image to Docker Hub
+
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCESSTOKEN}}
+
+      - name: Build and Push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: iskhakov/${{ env.IMAGE_NAME }}:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push
+
+    steps:
+      - name: Deploy to VM via SSH action
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          envs: IMAGE_NAME,CONTAINER_NAME
+          script: |
+            # Stop running container
+            docker stop $(echo $CONTAINER_NAME)
+
+            # Remove old container
+            docker rm $(echo $CONTAINER_NAME)
+
+            # Set env variables
+            export TOKEN=${{ secrets.TELEGRAM_TOKEN }}
+            export CLIENT_ID=${{ secrets.TODOIST_CLIENT_ID }}
+            export CLIENT_SECRET=${{ secrets.TODOIST_CLIENT_SECRET }}
+            export AUTH_SERVER_URL=${{ secrets.AUTH_SERVER_URL }}
+
+            # Run a new container from a new image
+            docker run -e TOKEN -e CLIENT_ID -e CLIENT_SECRET -e AUTH_SERVER_URL -d \
+            --restart always \
+            --publish 80:80 \
+            --name $(echo $CONTAINER_NAME) \
+            iskhakov/$(echo $IMAGE_NAME):latest
