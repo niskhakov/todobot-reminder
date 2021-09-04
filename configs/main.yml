@@ -1,4 +1,4 @@
-db_file: "bot.db"
+db_file: "db/bot.db"
 bot_url: "https://t.me/todo_reminder_bot"
 messages:
   responses:

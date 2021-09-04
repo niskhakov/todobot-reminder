@@ -24,7 +24,7 @@ func NewAuthorizationServer(todoistClient *todoist.Client, tokenRepository repos
 
 func (s *AuthorizationServer) Start() error {
 	s.server = &http.Server{
-		Addr:    ":80",
+		Addr:    ":3001",
 		Handler: s,
 	}
 

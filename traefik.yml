@@ -1,24 +1,39 @@
+api:
+  dashboard: true
+  insecure: true
+
+providers:
+  docker:
+    exposedByDefault: false
+
+log:
+  level: INFO
+
 entryPoints:
   http:
     address: ":80"
   https:
     address: ":443"
 
-http:
-  routers:
-    http-catchall:
-      rule: hostregexp(`{host:.+}`)
-      entrypoints:
-        - http
-      middlewares:
-        - redirect-to-https
-  middlewares:
-    redirect-to-https:
-      redirectScheme:
-        scheme: https
-        permanent: false
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: letsencrypt@iskhakov.me
+      storage: /letsencrypt/acme.json
+      httpChallenge:
+        entryPoint: http
 
-providers:
-  docker:
-    endpoint: "unix:///var/run/docker.sock"
-    exposedByDefault: false
+        # http:
+        #   routers:
+        #     http-catchall:
+        #       rule: hostregexp(`{host:.+}`)
+        #       entrypoints:
+        #         - http
+        #       middlewares:
+        #         - redirect-to-https
+        #   middlewares:
+        #     redirect-to-https:
+        #       redirectScheme:
+        #         scheme: https
+        #         permanent: false
+

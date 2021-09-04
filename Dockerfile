@@ -11,6 +11,6 @@ WORKDIR /root/
 COPY --from=0 /github.com/niskhakov/todobot-reminder/bin/bot .
 COPY --from=0 /github.com/niskhakov/todobot-reminder/configs configs/
 
-EXPOSE 8080
+EXPOSE 3001
 
 CMD ["./bot"]
